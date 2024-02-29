@@ -65,7 +65,7 @@ def backtest(symbol, start_date, end_date, short_window, long_window, initial_ca
 
 if __name__ == '__main__':
     # Define parameters
-    symbol = 'GOLD'
+    symbol = 'BABA'
     start_date = '2021-01-01'
     end_date = '2021-12-31'
     short_window = 10
