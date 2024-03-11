@@ -3,6 +3,7 @@ import pandas as pd
 
 # Set pandas to display all columns in DataFrame
 pd.set_option('display.max_columns', None)
+pd.set_option('display.max_rows', None)
 
 pytrends = TrendReq(hl='en-US')
 

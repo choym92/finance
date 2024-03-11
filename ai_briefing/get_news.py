@@ -3,13 +3,6 @@ from api_keys import NEWS_API_KEY
 from newsapi import NewsApiClient
 from datetime import datetime, timedelta
 
-# Constants
-q = 'finance'
-SOURCES = 'the-wall-street-journal, bloomberg, fortune, business-insider, financial-post'
-TODAY = datetime.today().strftime("%Y-%m-%d")
-YESTERDAY = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
-
-
 def see_available_categories(newsapi):
     try:
         from newsapi.const import categories
@@ -22,39 +15,28 @@ def see_available_categories(newsapi):
         print("The 'categories' constant could not be found. Please refer to the News API documentation.")
 
 
+# /v2/top-headlines/sources
+
+
+# Constants
+TODAY = datetime.today().strftime("%Y-%m-%d")
+YESTERDAY = (datetime.today() - timedelta(days=1)).strftime("%Y-%m-%d")
+
 # Init
 newsapi = NewsApiClient(api_key=NEWS_API_KEY)
 
-# /v2/top-headlines/sources
-
-newsapi.get_sources(category='business', language='en')
 # get all list of sources
-sources = newsapi.get_sources()['sources']
-# List comprehension to filter IDs where language is 'en'
-filtered_sources_str = ', '.join([source['id'] for source in sources if source['language'] == 'en'
-                                  and (source['category'] == 'general' or source['category'] == 'business')])
+sources_list = newsapi.get_sources()['sources']
+sources = [source['id'] for source in sources_list]
+
+see_available_categories(newsapi)
 
 
 
-# /v2/top-headlines
-top_headlines = newsapi.get_top_headlines(q='finance, economy, stock, stock-market',
-                                          sources=filtered_sources_str,
-                                          # category='business',
-                                          language='en')
-
-
-
-# /v2/everything
-all_articles = newsapi.get_everything(q='finance, economy',
-                                      sources=filtered_sources_str,
-                                      from_param='2024-02-23',
-                                      to='2024-02-29',
-                                      sort_by='popularity ',
-                                      page=2)
 
 # /v2/everything
 all_articles2 = newsapi.get_everything(
-                                      q='finance, economy, economic, stock, stock-market, investing',
+                                      q='finance, economy, stock, market, investing',
                                       # sources='the-wall-street-journal',
                                       from_param=YESTERDAY,  # Adjust the start date as needed
                                       to=TODAY,  # Adjust the end date as needed
@@ -66,21 +48,26 @@ all_articles2 = newsapi.get_everything(
 
 # /v2/everything
 all_articles3 = newsapi.get_everything(
-                                      q='AMLX',
-                                      # sources='the-wall-street-journal',
-                                      from_param=YESTERDAY,  # Adjust the start date as needed
-                                      to=TODAY,  # Adjust the end date as needed
+                                      # q='Global Markets',
+                                      domains='foxbusiness.com',
+                                      # from_param=YESTERDAY,  # Adjust the start date as needed
+                                      # to=TODAY,  # Adjust the end date as needed
                                       language='en',
                                       sort_by='popularity',
                                       # page=1,  # Adjust to explore different pages of results
                                       # page_size=10)  # Fetch 10 articles
 )
+print(all_articles3)
 
 
+DOMAINS = 'marketwatch.com'
+
+Q = 'finance, market,technology, stock, investing'
 # /v2/everything
 wsj_articles = newsapi.get_everything(
-                                      # q='finance, economy, stock, stock-market',
-                                      sources=SOURCES,
+                                      q='investing',
+                                      # sources='bloomberg',
+                                      domains='marketwatch.com, cnbc.com, bloomberg.com, wsj.com, reuters.com, foxbusiness.com, bbc.com, nytimes.com, finance.yahoo.com, investing.com',
                                       from_param=YESTERDAY,  # Adjust the start date as needed
                                       to=TODAY,  # Adjust the end date as needed
                                       language='en',
@@ -88,6 +75,8 @@ wsj_articles = newsapi.get_everything(
                                       # page=1,  # Adjust to explore different pages of results
                                       # page_size=10)  # Fetch 10 articles
 )
+
+len(wsj_articles['articles'])
 
 # Concatenate all article contents into one large document
 all_titles = "\n".join([article["title"] for article in all_articles2['articles']])
