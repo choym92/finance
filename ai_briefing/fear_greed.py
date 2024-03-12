@@ -8,8 +8,15 @@ from selenium.webdriver.support import expected_conditions as EC
 
 FEAR_AND_GREED_URL = 'https://www.cnn.com/markets/fear-and-greed'
 
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+}
+
+FG_XPATH = '/html/body/div[1]/section[4]/section[1]/section[1]/div/section/div[1]/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[2]/div[2]'
+VIX_XPATH = '/html/body/div[1]/section[4]/section[1]/section[1]/div/section/div[7]/div[2]/span'
+
 # Make a request to the URL
-response = requests.get(FEAR_AND_GREED_URL)
+response = requests.get(FEAR_AND_GREED_URL, headers=headers)
 
 # Check if the response was successful (status code 200)
 if response.status_code == 200:
@@ -24,13 +31,12 @@ if response.status_code == 200:
         EC.presence_of_element_located((By.CLASS_NAME, 'market-fng-gauge__dial-number-value'))
     )
     fear_greed_element_prev = WebDriverWait(driver, 5).until(
-        EC.visibility_of_element_located((By.XPATH,
-                                          '/html/body/div[1]/section[4]/section[1]/section[1]/div/section/div[1]/div[2]/div[1]/div/div[1]/div[2]/div[1]/div[2]/div[2]'))
+        EC.visibility_of_element_located((By.XPATH, FG_XPATH))
     )
     # Or using XPath (adjust based on actual HTML structure)
     vix_element = WebDriverWait(driver, 5).until(
         EC.visibility_of_element_located(
-            (By.XPATH, '/html/body/div[1]/section[4]/section[1]/section[1]/div/section/div[7]/div[2]/span'))
+            (By.XPATH, VIX_XPATH))
     )
 
     # Extract and print the value
@@ -51,19 +57,3 @@ else:
 
 
 fg_value = int(fg_value)
-
-
-
-
-
-#a
-#
-#
-#
-# MARKET VOLATILITY
-#
-# CPI
-#
-# PPI
-#
-# Interest Rate - volatility, acceleration, derivative DELTA% LAGGING -1d vs cd,  -2d vs cd, -3d vs cd
