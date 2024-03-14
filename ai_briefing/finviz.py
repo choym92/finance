@@ -5,7 +5,7 @@ from datetime import datetime
 # Set pandas to display all columns in DataFrame
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', None)
-
+import json
 
 def query_finviz_news(soup):
     """
@@ -87,15 +87,16 @@ if response.status_code == 200:
     # parse html
     soup = BeautifulSoup(response.text, 'html.parser')
     data = query_finviz_news(soup)
+    today_fn_df = preprocess_finviz_data(data)
 else:
     print(f"Failed to retrieve the webpage: Status code {response.status_code}")
 
-import json
+
 driver.get(CNBC_URL)
 # Convert the driver page source to a soup object
 soup = BeautifulSoup(driver.page_source, 'html.parser')
 
-BBC_URL = 'https://www.bbc.com/news/technology-68535381'
+BBC_URL = 'https://www.bbc.com/news/business-68515100'
 bbc_response = requests.get(BBC_URL, headers=headers)
 bbc_soup = BeautifulSoup(bbc_response.text, 'html.parser')
 
@@ -106,61 +107,73 @@ bbc_soup = BeautifulSoup(bbc_response.text, 'html.parser')
 article = ' '.join([article.text for article in cnbc_articles])
 
 
+
+
+# Define the find_contents function outside to avoid redefinitions
+def find_contents(data, key_to_find="contents"):
+    if isinstance(data, dict):
+        for key, value in data.items():
+            if key_to_find in key:
+                return value
+            else:
+                found = find_contents(value, key_to_find)
+                if found is not None:
+                    return found
+    elif isinstance(data, list):
+        for item in data:
+            found = find_contents(item, key_to_find)
+            if found is not None:
+                return found
+    return None
+
+
+
 def fetch_article_content(url, source):
     headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
     }
-    response = requests.get(url, headers=headers)
-    if response.status_code == 200:  # Check if the request was successful.
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Initialize an empty string for article content
-        article_content = ""
-
-        if source == 'CNBC':
+    article_content = ""
+    print(url, '\n', source)
+    if source == 'CNBC':
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:  # Check if the request was successful.
+            soup = BeautifulSoup(response.text, 'html.parser')
             cnbc_articles = soup.find_all('div', class_='group')
             article_content = ' '.join([article.text for article in cnbc_articles])
-        elif source == 'BBC':
-            bbc_response = requests.get(BBC_URL, headers=headers)
-            bbc_soup = BeautifulSoup(bbc_response.text, 'html.parser')
+        else:
+            print(f"Failed to fetch article for {source}")
 
-            # Find the <script> tag with the JSON data
-            script_tag = bbc_soup.find('script', id='__NEXT_DATA__')
-            data = json.loads(script_tag.string) if script_tag and script_tag.string else {}
-
-            # Function to recursively search for a key in nested dictionaries and lists
-            def find_contents(data, key_to_find="contents"):
-                if isinstance(data, dict):
-                    for key, value in data.items():
-                        if key_to_find in key:
-                            return value
-                        else:
-                            found = find_contents(value, key_to_find)
-                            if found is not None:
-                                return found
-                elif isinstance(data, list):
-                    for item in data:
-                        found = find_contents(item, key_to_find)
-                        if found is not None:
-                            return found
-                return None
-
-            # Use the find_contents function to dynamically locate the article contents
-            contents = find_contents(data)
-
-            # Extracting article content in a more concise way
-            article_content = ' '.join(
-                block.get('model', {}).get('text', '')
-                for content in contents if content.get('type') == 'text'
-                for block in content.get('model', {}).get('blocks', [])
-            )
-        return article_content
+    elif source == 'BBC':
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            script_tag = soup.find('script', id='__NEXT_DATA__')
+            # If script_tag is truthy, proceed with the rest of the code
+            if script_tag:
+                data = json.loads(script_tag.string) if script_tag.string else {}
+                contents = find_contents(data)
+                article_content = ' '.join(
+                    block.get('model', {}).get('text', '')
+                    for content in contents if content.get('type') == 'text'
+                    for block in content.get('model', {}).get('blocks', [])
+                )
+            # If script_tag is falsy, this part (else) is executed, which does nothing and effectively skips the rest of the code.
+            else:
+                article_content = None  # Or any other operation you deem necessary
+        else:
+            print(f"Failed to fetch article for {source}: {url}")
     else:
-        print(f"Failed to fetch article for {source}")
-        return None
+        print(f"Source {source} not supported.")
+        article_content = None
+
+    return article_content
 
 
 
 # Apply the fetch_article_content function to rows, passing the URL and source
 for index, row in today_fn_df.iterrows():
     today_fn_df.at[index, 'article_content'] = fetch_article_content(row['url'], row['source'])
+
+
+
+

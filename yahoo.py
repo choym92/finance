@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 # Download historical data for stocks
-data = yf.download('SPY', start='2023-06-01', end='2024-03-10')
+data = yf.download('AAPL', start='2023-06-01', end='2024-03-10')
 
 # Calculate price changes
 data['Delta'] = data['Adj Close'].diff()
@@ -62,85 +62,155 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 
-def plot_chart(data): 
-    
-    # Assuming 'data' is your DataFrame with the necessary columns including RSI
-    
-    # Create a new figure and set the size
-    plt.figure(figsize=(14, 10))
-    
-    # Plot the adjusted close price
+def plot_full_chart_with_signals(data):
+    plt.figure(figsize=(14, 12))
+
+    # First subplot for Adjusted Close Price with Buy/Sell Signals
     plt.subplot(3, 1, 1)  # 3 rows, 1 column, 1st subplot
     plt.plot(data.index, data['Adj Close'], label='Adj Close')
-    plt.title('Adjusted Close Price')
+    plt.title('Adjusted Close Price with Buy/Sell Signals')
+
+    # Highlight buy signals on the adjusted close price chart
+    buy_signals = data[data['Buy Signal'] == True]
+    plt.scatter(buy_signals.index, buy_signals['Adj Close'], label='Buy Signal', color='green', marker='^', s=100)
+
+    # Highlight sell signals on the adjusted close price chart
+    sell_signals = data[data['Sell Signal'] == True]
+    plt.scatter(sell_signals.index, sell_signals['Adj Close'], label='Sell Signal', color='red', marker='v', s=100)
+
     plt.legend()
-    
-    # Plot Impulse MACD ('md'), Signal ('sb'), and Histogram ('sh')
+
+    # Second subplot for Impulse MACD ('md'), Signal ('sb'), and Histogram ('sh')
     plt.subplot(3, 1, 2)  # 3 rows, 1 column, 2nd subplot
     plt.bar(data.index, data['sh'], label='Impulse Histogram (sh)', color='grey', alpha=0.3)
     plt.plot(data.index, data['md'], label='Impulse MACD (md)', color='blue')
     plt.plot(data.index, data['sb'], label='Signal (sb)', color='red', linestyle='--')
     plt.title('Impulse MACD')
-    
+
     # Highlight buy signals
-    buy_signals = data[data['Buy Signal'] == True]
-    plt.scatter(buy_signals.index, buy_signals['md'], label='Buy Signal', color='green', marker='^', alpha=1)
-    
+    plt.scatter(buy_signals.index, buy_signals['md'], label='Buy Signal (MACD)', color='green', marker='^', s=100)
+
     # Highlight sell signals
-    sell_signals = data[data['Sell Signal'] == True]
-    plt.scatter(sell_signals.index, sell_signals['md'], label='Sell Signal', color='red', marker='v', alpha=1)
-    
+    plt.scatter(sell_signals.index, sell_signals['md'], label='Sell Signal (MACD)', color='red', marker='v', s=100)
+
     plt.legend()
-    
-    # Plot RSI
+
+    # Third subplot for Relative Strength Index (RSI)
     plt.subplot(3, 1, 3)  # 3 rows, 1 column, 3rd subplot
     plt.plot(data.index, data['RSI'], label='RSI', color='purple')
     plt.title('Relative Strength Index (RSI)')
     plt.axhline(70, linestyle='--', color='red', alpha=0.5)  # Overbought line
     plt.axhline(30, linestyle='--', color='green', alpha=0.5)  # Oversold line
     plt.legend()
-    
-    # Format the x-axis
-    plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-    plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
-    plt.gcf().autofmt_xdate()  # Rotation
-    
+
+    # Format the x-axis for all subplots
+    for i in range(1, 4):
+        plt.subplot(3, 1, i)
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+        plt.gca().xaxis.set_major_locator(mdates.MonthLocator())
+        plt.gcf().autofmt_xdate()  # Rotation
+
     plt.tight_layout()  # Adjust subplots to fit into the figure area.
     plt.show()
 
-
-# omit first 40 days so i can have a correct view of the stock
-
-plot_chart(data_omit)
+# Call the function with your data frame to visualize the charts
+plot_full_chart_with_signals(data_omit)
 
 
 
+###################################### BACKTEST
+
+import pandas as pd
+
+# Your initial capital and other settings
+initial_capital = 100000
+capital = initial_capital
+position = 0  # To track how many shares are held
+in_position = False
+
+# Lists to store the value of the portfolio over time
+portfolio_values = []
+
+for date, row in data_omit.iterrows():
+    # Check for buy signal and if we're not already in position
+    if row['Buy Signal'] and not in_position:
+        # Calculate how many shares we can buy
+        shares_to_buy = capital // row['Adj Close']
+        cost_of_buy = shares_to_buy * row['Adj Close']
+        capital -= cost_of_buy
+        position += shares_to_buy
+        in_position = True
+        print(f"Buying {shares_to_buy} shares on {date} at {row['Adj Close']}")
+
+    # Check for sell signal and if we are in position
+    elif row['Sell Signal'] and in_position:
+        # Calculate the value of selling the shares
+        value_of_sell = position * row['Adj Close']
+        capital += value_of_sell
+        print(f"Selling {position} shares on {date} at {row['Adj Close']}")
+        position = 0
+        in_position = False
+
+    # Update the portfolio value for each day
+    portfolio_value = capital + (position * row['Adj Close'])
+    portfolio_values.append(portfolio_value)
+
+# Convert the portfolio values list into a pandas Series for easy plotting and analysis
+portfolio_values_series = pd.Series(portfolio_values, index=data_omit.index)
+
+# Print the final portfolio value
+final_portfolio_value = portfolio_values_series.iloc[-1]
+print(f"Final portfolio value: ${final_portfolio_value:,.2f} after starting with ${initial_capital:,.2f}")
+print(f"Profit / Loss: ${final_portfolio_value - initial_capital:,.2f}")
+
+# Plotting the portfolio value over time
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(14, 7))
+portfolio_values_series.plot(title='Portfolio Value Over Time')
+plt.xlabel('Date')
+plt.ylabel('Portfolio Value ($)')
+plt.show()
 
 
 
+# Example: Downloading historical data for the SPY ETF as a benchmark
+benchmark_data = yf.download('AAPL', start='2023-06-01', end='2024-03-10')['Adj Close']
+
+initial_capital = 100000  # Assuming the same initial capital as your strategy
+
+# Calculate daily returns of the benchmark
+benchmark_returns = benchmark_data.pct_change()
+
+# Calculate cumulative returns by adding 1 and then calculating the cumulative product
+benchmark_cumulative_returns = (1 + benchmark_returns).cumprod()
+
+# Calculate the benchmark portfolio value series
+benchmark_values_series = initial_capital * benchmark_cumulative_returns
 
 
+# Calculate performance metrics for both
+from scipy.stats import ttest_ind
 
+# Example: Comparing annualized returns
+annualized_return_strategy = portfolio_values_series.pct_change().mean() * 252
+annualized_return_benchmark = benchmark_values_series.pct_change().mean() * 252
 
+print(f"Strategy Annualized Return: {annualized_return_strategy}")
+print(f"Benchmark Annualized Return: {annualized_return_benchmark}")
 
+# Statistical Test Example: Comparing daily returns
+t_stat, p_value = ttest_ind(portfolio_values_series.pct_change().dropna(), benchmark_values_series.pct_change().dropna())
 
-#######################################
+print(f"T-statistic: {t_stat}, P-value: {p_value}")
+# A small p-value (< 0.05) might indicate a statistically significant difference in daily returns
 
-
-
-
-
-
-# MACD Line: 12-day EMA - 26-day EMA
-data['EMA12'] = data['Adj Close'].ewm(span=12, adjust=False).mean()
-data['EMA26'] = data['Adj Close'].ewm(span=26, adjust=False).mean()
-data['MACD'] = data['EMA12'] - data['EMA26']
-
-# Signal Line: 9-day EMA of MACD Line
-data['Signal Line'] = data['MACD'].ewm(span=9, adjust=False).mean()
-
-# MACD Histogram: MACD Line - Signal Line
-data['MACD Histogram'] = data['MACD'] - data['Signal Line']
-
-# Select relevant columns to display
-print(data[['Adj Close', 'RSI', 'MACD', 'Signal Line', 'MACD Histogram']])
+# Visual Comparison
+plt.figure(figsize=(14, 7))
+plt.plot(portfolio_values_series, label='Strategy')
+plt.plot(benchmark_values_series, label='Benchmark')
+plt.title('Portfolio Value: Strategy vs. Benchmark')
+plt.xlabel('Date')
+plt.ylabel('Portfolio Value')
+plt.legend()
+plt.show()

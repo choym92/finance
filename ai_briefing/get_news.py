@@ -48,16 +48,16 @@ all_articles2 = newsapi.get_everything(
 
 # /v2/everything
 all_articles3 = newsapi.get_everything(
-                                      # q='Global Markets',
-                                      domains='foxbusiness.com',
-                                      # from_param=YESTERDAY,  # Adjust the start date as needed
-                                      # to=TODAY,  # Adjust the end date as needed
-                                      language='en',
+                                      # q='finance',
+                                      domains='bloomberg',
+                                      from_param=YESTERDAY,  # Adjust the start date as needed
+                                      to=TODAY,  # Adjust the end date as needed
+                                      # language='en',
                                       sort_by='popularity',
                                       # page=1,  # Adjust to explore different pages of results
                                       # page_size=10)  # Fetch 10 articles
 )
-print(all_articles3)
+print(all_articles2)
 
 
 DOMAINS = 'marketwatch.com'
@@ -107,3 +107,5 @@ articles = response.json()
 # Print titles and URLs of top articles
 for article in articles['articles'][:5]:
     print(f"Title: {article['title']}\nURL: {article['url']}\n")
+
+
