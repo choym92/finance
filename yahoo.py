@@ -3,7 +3,7 @@ import pandas as pd
 import numpy as np
 
 # Download historical data for stocks
-data = yf.download('AAPL', start='2023-06-01', end='2024-03-10')
+data = yf.download('LSXMA', start='2023-06-01', end='2024-03-10')
 
 # Calculate price changes
 data['Delta'] = data['Adj Close'].diff()
