@@ -51,7 +51,7 @@ class NewsScraper:
         news_df['date_'] = pd.to_datetime(news_df['date_']).dt.strftime('%m-%d-%Y')
         return news_df
 
-# Example usage:
-news_scraper = NewsScraper(NEWS_API_KEY)
-news_data = news_scraper.scrape_news()
-print(news_data)
+# # Example usage:
+# news_scraper = NewsScraper(NEWS_API_KEY)
+# news_data = news_scraper.scrape_news()
+# print(news_data)

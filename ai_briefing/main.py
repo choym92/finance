@@ -1,20 +1,35 @@
-from google_trend import fetch_top_trends
-from get_news import fetch_news_articles
+import sys
+import os
+from api_keys import NEWS_API_KEY
+import pandas as pd
 
+# Append the 'ai_briefing' directory to sys.path
+project_directory = 'C:\\Users\\Paul Cho\\Documents\\YM\\Project\\finance'
+ai_briefing_directory = os.path.join(project_directory, 'ai_briefing')
+sys.path.append(ai_briefing_directory)
+
+
+from get_news import NewsScraper
+from finviz import FinvizNewsScraper
 
 def main():
-    # Fetch top 5 trending company queries from Google Trends
-    top_companies = fetch_top_trends()
+    # Scrape news data
+    finviz_scraper = FinvizNewsScraper()
+    finviz_data = finviz_scraper.get_finviz_data()
 
-    # Iterate through the list of top companies and fetch related news articles for each
-    for company in top_companies:
-        print(f"Fetching news for {company}...")
-        news_articles = fetch_news_articles(company)
+    news_scraper = NewsScraper(NEWS_API_KEY)
+    news_data = news_scraper.scrape_news()
 
-        # Process or display the fetched news articles as needed
-        for article in news_articles:
-            print(article)  # This is a placeholder; customize it according to your data structure
+    # Data preprocessing
+    # Example: Merge dataframes on a common column (if applicable)
+    combined_data = pd.merge(news_data, finviz_data, on='common_column', how='inner')
 
+    # Data analysis/processing
+    # Example: Filter data, perform analysis, etc.
+
+    # Save or output data
+    # combined_data.to_csv('combined_data.csv', index=False)
+    # print("Data processing complete. Saved to combined_data.csv")
 
 if __name__ == "__main__":
     main()
