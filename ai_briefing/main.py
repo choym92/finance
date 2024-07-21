@@ -22,7 +22,7 @@ def main():
 
     # Data preprocessing
     # Example: Merge dataframes on a common column (if applicable)
-    combined_data = pd.merge(news_data, finviz_data, on='common_column', how='inner')
+    combined_data = pd.concat([news_data[['date_', 'title', 'url', 'content']], finviz_data[['date_', 'title', 'url', 'content']]], axis=0)
 
     # Data analysis/processing
     # Example: Filter data, perform analysis, etc.
