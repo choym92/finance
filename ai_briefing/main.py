@@ -1,7 +1,11 @@
 import sys
 import os
-from api_keys import NEWS_API_KEY
 import pandas as pd
+from dotenv import load_dotenv
+# Load environment variables from the .env file
+load_dotenv()
+NEWS_API_KEY = os.getenv('NEWS_API_KEY')
+
 
 # Append the 'ai_briefing' directory to sys.path
 project_directory = 'C:\\Users\\Paul Cho\\Documents\\YM\\Project\\finance'

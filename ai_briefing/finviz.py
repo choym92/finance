@@ -136,7 +136,7 @@ class FinvizNewsScraper:
             today_fn_df.at[index, 'content'] = self.fetch_article_content(row['url'], row['source'])
         return today_fn_df
 
-# # Example usage:
-# # finviz_scraper = FinvizNewsScraper()
-# # finviz_df = finviz_scraper.get_finviz_data()
-# # print(finviz_df)
+# Example usage:
+# finviz_scraper = FinvizNewsScraper()
+# finviz_df = finviz_scraper.get_finviz_data()
+# print(finviz_df)

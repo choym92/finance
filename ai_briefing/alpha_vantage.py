@@ -1,5 +1,9 @@
 import requests
-from api_keys import ALPHA_VANTAGE_API_KEY
+from dotenv import load_dotenv
+import os
+# Load environment variables from the .env file
+load_dotenv()
+ALPHA_VANTAGE_API_KEY = os.getenv('ALPHA_VANTAGE_API_KEY')
 
 url = f'https://www.alphavantage.co/query?function=NEWS_SENTIMENT&tickers=AAPL&apikey={ALPHA_VANTAGE_API_KEY}'
 r = requests.get(url)

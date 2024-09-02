@@ -1,7 +1,13 @@
 from datetime import datetime, timedelta
-from api_keys import NEWS_API_KEY
 from newsapi import NewsApiClient
 import pandas as pd
+
+import requests
+from dotenv import load_dotenv
+import os
+# Load environment variables from the .env file
+load_dotenv()
+NEWS_API_KEY = os.getenv('NEWS_API_KEY')
 
 class NewsScraper:
     def __init__(self, api_key):
