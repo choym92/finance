@@ -1,4 +1,5 @@
 import requests
+import platform
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
@@ -23,7 +24,7 @@ if response.status_code == 200:
     # Setup Chrome with webdriver_manager
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-    # Open the webpage
+    # Open the webpage 
     driver.get(FEAR_AND_GREED_URL)
 
     # Wait for the element with the class 'market-fng-gauge__dial-number-value' to be present
@@ -51,9 +52,6 @@ if response.status_code == 200:
     driver.quit()
 else:
     print(f"Failed to access {FEAR_AND_GREED_URL} - Status Code: {response.status_code}")
-
-
-
 
 
 fg_value = int(fg_value)
