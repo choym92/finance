@@ -21,9 +21,8 @@ response = client.audio.speech.create(
     input=TEXT,
 )
 
-streamed_response = response.with_streaming_response()
-
-# Now, use the streamed_response to write to a file
-# Assuming `response` contains the binary audio data from the TTS request
+# Save the audio content directly to a file
 with open("output.mp3", "wb") as file:
     file.write(response.content)
+
+print("Audio content saved to 'output.mp3'")

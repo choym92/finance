@@ -13,7 +13,7 @@ ai_briefing_directory = os.path.join(project_directory, 'ai_briefing')
 sys.path.append(ai_briefing_directory)
 
 
-from get_news import NewsScraper
+from ai_briefing.scrapers.get_news import NewsScraper
 from finviz import FinvizNewsScraper
 
 def main():

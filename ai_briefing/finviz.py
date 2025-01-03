@@ -137,6 +137,6 @@ class FinvizNewsScraper:
         return today_fn_df
 
 # Example usage:
-# finviz_scraper = FinvizNewsScraper()
-# finviz_df = finviz_scraper.get_finviz_data()
-# print(finviz_df)
+finviz_scraper = FinvizNewsScraper()
+finviz_df = finviz_scraper.get_finviz_data()
+print(finviz_df)
