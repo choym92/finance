@@ -19,7 +19,7 @@ def get_fear_grid_index(url, chromedriver_dir):
     # Make a request to the URL
     response = requests.get(url, headers=headers)
 
-    print(response)
+    print(response)  
 
     # Check if the response was successful (status code 200)
     if response.status_code == 200:
